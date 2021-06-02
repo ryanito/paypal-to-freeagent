@@ -1,6 +1,11 @@
 # Introduction
 
-The script will take a CSV file (generated with PayPal reports) and upload the transactions to the FreeAgent bank account(s) you specify in `.env`. 
+The script will take a CSV file (generated with PayPal reports) and upload the transactions to the FreeAgent bank account(s) you specify in `.env`.
+
+I created this script for two reasons:
+
+- To avoid FreeAgent's built-in de-duplication (prevents missing transactions)
+- To support multi-currency bank accounts (one upload for all currencies)
 
 FreeAgent's built-in de-duplication uses three key pieces of information - Date, Amount and Description. If these are identical on more than one transaction, FreeAgent will view this as a potential duplicate. However, this can cause missing transactions in FreeAgent bank accounts where de-duplication is removing **different** transactions that have the same Date, Amount and Description.
 
