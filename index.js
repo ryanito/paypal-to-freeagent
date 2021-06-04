@@ -11,16 +11,16 @@ const {
     FREEAGENT_BANK_ACCOUNT_ID,
 } = process.env;
 
-// The CSV file
-const file = process.argv[2];
+// The PayPal report file
+const CSV_FILE = process.argv[2];
 
-if (!file || !file.toLowerCase().endsWith(".csv")) {
+// The prompt message to be displayed
+let message;
+
+if (!CSV_FILE || !CSV_FILE.toLowerCase().endsWith(".csv")) {
     console.log("Exiting...");
     process.exit(1);
 }
-
-// Prompt confirmation message
-let message;
 
 FREEAGENT_BANK_ACCOUNT_ID.split(",").forEach(function (bankAccount) {
     go(bankAccount).catch(error => {
@@ -47,11 +47,10 @@ async function go(bankAccount) {
     });
 
     const acc = await res1.json();
-    let currency = acc.bank_account.currency;
-
+    const currency = acc.bank_account.currency;
     let statement = [];
 
-    fs.createReadStream(file)
+    fs.createReadStream(CSV_FILE)
         .pipe(csv.parse({headers: true}))
         .transform(data => ({
             dated_on: `${data.Date.split("/")[2]}-${data.Date.split("/")[1]}-${data.Date.split("/")[0]}`,
@@ -69,22 +68,18 @@ async function go(bankAccount) {
                 statement.push(row)
             }
         })
-        .on('end', count => { // Done!
+        .on('end', () => { // Done!
 
-            if (!message) {
-                message = `Found ${statement.length} ${currency} transactions from ${statement[0].dated_on} to ${statement[statement.length - 1].dated_on}. Ready to upload?`;
-            } else {
-                message = message.slice(0, -18) + ` and ${statement.length} ${currency} transactions from ${statement[0].dated_on} to ${statement[statement.length - 1].dated_on}. Ready to upload?`;
-            }
-
-            const question = {
-                type: 'confirm',
-                name: 'confirmed',
-                message: message,
-            };
+            message = (!message ? "Found" : message.slice(0, -18) + " and") + ` ${statement.length} ${currency} transactions from ${statement[0].dated_on} to ${statement[statement.length - 1].dated_on}. Ready to upload?`;
 
             (async () => {
-                const response = await prompts(question);
+
+                const response = await prompts({
+                    type: 'confirm',
+                    name: 'confirmed',
+                    message: message,
+                });
+
                 if (response.confirmed) { // Upload!
 
                     const res1 = await fetch(`https://api.freeagent.com/v2/bank_transactions/statement?bank_account=${bankAccount}`, {
@@ -106,7 +101,9 @@ async function go(bankAccount) {
                     console.log("Exiting...");
                     process.exit(1);
                 }
+
             })();
+
         });
 
 }
