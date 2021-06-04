@@ -27,4 +27,4 @@ You can specify multiple FreeAgent bank accounts as a comma-separated string in 
 
 ![terminal](https://user-images.githubusercontent.com/7041605/120565828-d1e10e00-c405-11eb-9cb0-3b07e1524eb7.gif)
 
-Go to your FreeAgent account and the transactions will be in the bank account, ready to be explained/confirmed.
+Go to your FreeAgent account and the transactions will be in the bank account(s), ready to be explained/confirmed.
